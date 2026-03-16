@@ -1,52 +1,53 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is a Brave browser checkout with two important layers:
+This checkout has two repos layered together:
 
-- Root: build orchestration, docs, and the Chromium checkout entrypoint.
+- Root: docs, workspace metadata, and the `src/` entrypoint.
 - `src/`: the Chromium source repo.
-- `src/brave/`: Brave-specific code, patches, build scripts, branding, and product features.
+- `src/brave/`: Brave-specific build scripts, branding, browser code, and patches.
 
-Most custom product work happens in `src/brave/`. Examples:
+Most BrowseX customization work belongs in `src/brave/`. Common paths:
 
-- `src/brave/app/`: branded strings, resources, app metadata.
-- `src/brave/browser/`: browser UI, features, prefs, WebUI.
-- `src/brave/components/`: shared components and feature build flags.
-- `src/brave/patches/`: Chromium patch overlays.
+- `src/brave/app/`: strings, icons, branding resources, packaging metadata.
+- `src/brave/browser/`: browser UI, WebUI, omnibox, prefs, commands.
+- `src/brave/components/`: shared features and build flags.
+- `src/chrome/`: Chromium-side files overridden or patched by Brave.
 
 ## Build, Test, and Development Commands
 Run commands from `src/brave` unless noted otherwise.
 
 - `npm install`: install Node dependencies.
-- `npm run init`: initial sync of Chromium, DEPS, and Brave dependencies.
-- `npm run build`: build the default component configuration.
-- `npm run build Release`: build the release configuration.
-- `npm start [Release|Component|Debug]`: launch the built browser.
-- `npm run sync`: refresh Brave/Chromium dependencies after pulling changes.
-- `npm run apply_patches`: reapply patch files when patch-only changes were made.
-- `npm run test-unit`: run Jest unit tests.
-- `npm run eslint`: run JavaScript/TypeScript linting.
-- `npm run format`: run the repo formatting script.
+- `npm run init`: one-time bootstrap; syncs Chromium/DEPS and can take a long time.
+- `npm run build`: build the default component/dev configuration.
+- `npm run build Release`: build the optimized release configuration.
+- `npm start` or `npm start Release`: launch the built app.
+- `npm run create_dist -- Release --skip_signing`: create a local macOS package without signing.
+- `npm run sync`: refresh dependencies after pulling upstream changes.
+- `npm run test-unit`: run Jest tests.
+- `npm run eslint`: lint JS/TS code.
 
 ## Coding Style & Naming Conventions
 Follow existing file conventions before introducing new patterns.
 
 - C++ uses Chromium/Brave style: 2-space indentation, descriptive `CamelCase` types, `kConstantName` constants.
-- JS/TS/React code should match the local file style; prefer existing naming and directory structure over inventing new abstractions.
-- Keep branding/resource edits localized to `src/brave/app/` and feature gating in `src/brave/components/**/buildflags`.
+- JS/TS/React should follow the local file style; prefer edits within existing components over broad rewrites.
+- Keep user-facing branding/resource changes in `src/brave/app/` and feature gating in `src/brave/components/**/buildflags`.
+- Do not rename internal Brave identifiers or `brave://` plumbing unless the task explicitly requires it.
 
 ## Testing Guidelines
 Add or update targeted tests when behavior changes.
 
 - Web/UI and TypeScript logic: `npm run test-unit`
-- Lint and script validation: `npm run eslint`, `npm run test-python-scripts`
-- Large browser changes should be smoke-tested by building and launching locally.
+- Scripts and Python helpers: `npm run test-python-scripts`
+- Browser/UI changes: build and launch locally with `npm run build && npm start`
 
 Name tests after the behavior under test, and keep new test files adjacent to the affected subsystem.
 
 ## Commit & Pull Request Guidelines
 This checkout mixes a root repo and the nested `src` repo. Commit in the repo that actually owns the changed files.
 
-- Prefer short, imperative commit messages, for example: `Disable desktop Rewards/Talk/VPN` or `Rebrand desktop UI to BrowseX`.
-- Keep commits scoped to one task.
-- PRs should summarize user-visible changes, touched platforms, validation performed, and any known gaps (for example, untranslated strings or unchanged internal identifiers).
+- Prefer short, imperative commit messages, for example: `Disable desktop Rewards/Talk/VPN`.
+- Keep commits scoped to one task and avoid mixing generated files with source edits.
+- `src/` is often on detached `HEAD`; verify repo state before committing or pushing.
+- PRs should summarize user-visible changes, touched platforms, validation performed, and remaining gaps.
